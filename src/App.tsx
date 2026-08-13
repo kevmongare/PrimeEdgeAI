@@ -285,12 +285,12 @@ function Navbar() {
    honest, verifiable capability stats.
 ───────────────────────────────────────── */
 function Hero() {
-  const stats = [
-    { value: "3–6 wks", label: "Avg. time to first automation live" },
-    { value: "24/7",    label: "Systems run unattended, day or night" },
-    { value: "100%",    label: "Team training included on every build" },
-    { value: "Free",    label: "Initial AI audit, no obligation" },
-  ];
+  // const stats = [
+  //   { value: "3–6 wks", label: "Avg. time to first automation live" },
+  //   { value: "24/7",    label: "Systems run unattended, day or night" },
+  //   { value: "100%",    label: "Team training included on every build" },
+  //   { value: "Free",    label: "Initial AI audit, no obligation" },
+  // ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#020306] px-4 py--8">
