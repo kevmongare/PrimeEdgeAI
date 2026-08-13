@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
    IMAGES
 ───────────────────────────────────────── */
 const IMG = {
-  logo:      "/PrimeEdge_AI_Logo-removebg-preview.png",   // ← place your logo in /public/logo.png
+  logo:      "/PrimeEdge_AI_Logo-removebg-preview.png",   // ← place your logo in /public
   hero:      "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1800&q=85&auto=format&fit=crop",
   ai:        "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=900&q=80&auto=format&fit=crop",
   training:  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=900&q=80&auto=format&fit=crop",
@@ -15,15 +15,37 @@ const IMG = {
   divider:   "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1800&q=80&auto=format&fit=crop",
 };
 
+const PRIMARY_COLOR = "#6B8CFF";
+const SECONDARY_COLOR = "#C9A84C";
+
 /* ─────────────────────────────────────────
-   FONT INJECTION  (Cormorant + Inter)
+   SINGLE SOURCE OF TRUTH FOR CONTACT INFO
+   (fixes the mismatched UK/Kenya numbers)
+   Replace with your real, verified details.
+───────────────────────────────────────── */
+const CONTACT = {
+  location: "Nairobi, Kenya",
+  phone: "+254 735 159 159",
+  phoneHref: "tel:+254735159159",
+  whatsappHref: "https://wa.me/254735159159?text=Hello%21%20I%27m%20interested%20in%20your%20services.",
+  email: "info@primeedgeai.com",
+  hours: "Mon–Fri, 8am–6pm EAT",
+  // Replace with your real form endpoint, e.g. a Formspree/Basin/Getform URL,
+  // or point this at your own serverless function.
+  formEndpoint: "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID",
+};
+
+/* ─────────────────────────────────────────
+   FONT INJECTION  (Space Grotesk + Inter + Cormorant Garamond)
+   Cormorant Garamond was referenced in CSS but never loaded before —
+   every serif/italic headline was silently falling back to Georgia.
 ───────────────────────────────────────── */
 if (!document.head.querySelector("[data-pe-fonts]")) {
   const l = document.createElement("link");
   l.setAttribute("data-pe-fonts", "true");
   l.rel = "stylesheet";
   l.href =
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap";
+    "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap";
   document.head.appendChild(l);
 }
 
@@ -35,24 +57,46 @@ if (!document.head.querySelector("[data-pe-css]")) {
     :root { scroll-behavior: smooth; color-scheme: dark; }
     html, body, #root { background-color: #080810 !important; color: #F0F0F8; }
     body  { overflow-x: hidden; margin: 0; padding: 0; }
+    .font-brand   { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif !important; }
     .font-serif   { font-family: 'Cormorant Garamond', Georgia, serif !important; }
     .font-sans-pe { font-family: 'Inter', system-ui, sans-serif !important; }
-    .hero-grad-l  { background: linear-gradient(105deg, rgba(8,8,16,.97) 38%, rgba(8,8,16,.5) 65%, transparent 100%); }
+    .hero-grad-l  { background: linear-gradient(105deg, rgba(8,8,16,.98) 38%, rgba(8,8,16,.6) 65%, transparent 100%); }
     .hero-grad-b  { background: linear-gradient(to top, rgba(8,8,16,1) 0%, transparent 100%); }
     .hero-glow    { background: radial-gradient(ellipse, rgba(107,140,255,.18) 0%, transparent 65%); }
     .img-dark     { filter: saturate(.4) brightness(.22); }
+    .glass-panel  { background: rgba(0,0,0,.56); border: 1px solid rgba(0,0,0,.24); backdrop-filter: blur(30px); box-shadow: 0 48px 150px rgba(0,0,0,.60); }
+    .glass-panel::before { content: ""; position: absolute; inset: 0; border-radius: 36px; pointer-events: none; background: linear-gradient(150deg, rgba(0,0,0,.08), rgba(0,0,0,.24)); opacity: .18; }
+    .glass-panel::after { content: ""; position: absolute; inset: 0; border-radius: 36px; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.28), inset 0 0 28px rgba(0,0,0,.20); }
+    .navbar-panel { background: rgba(0,0,0,.78); border: 1px solid rgba(0,0,0,.24); backdrop-filter: blur(32px); box-shadow: 0 24px 110px rgba(0,0,0,.54); }
+    .navbar-panel::before { content: ""; position: absolute; inset: 0; border-radius: 999px; pointer-events: none; background: linear-gradient(120deg, rgba(0,0,0,.08), rgba(0,0,0,0)); }
+    .navbar-ambient { position: absolute; inset: 0; pointer-events: none; }
+    .navbar-ambient .orb { position: absolute; border-radius: 999px; filter: blur(80px); opacity: .65; }
+    .navbar-ambient .orb-purple { background: rgba(115,105,255,.32); }
+    .navbar-ambient .orb-indigo { background: rgba(45,55,160,.26); }
+    .nav-link-hover { color: rgba(255,255,255,.75); }
+    .nav-link-hover:hover { color: #ffffff !important; text-shadow: 0 0 18px rgba(107,140,255,.22); }
+    .nav-cta { transition: box-shadow .3s ease, transform .3s ease, background .2s ease, color .2s ease; }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 22px 70px rgba(62,88,255,.28); background: ${PRIMARY_COLOR} !important; color: #fff !important; }
+    .nav-cta:active { transform: translateY(0); }
+    .btn-accent { transition: background .2s ease, box-shadow .2s ease; }
+    .btn-accent:hover   { background: #4a6ef0 !important; box-shadow: 0 12px 48px rgba(107,140,255,.35); }
+    .btn-outline:hover  { border-color: rgba(255,255,255,.4) !important; color: #F0F0F8 !important; }
+    .logo-pill { box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
+    .section-panel { background: rgba(0,0,0,.64); border: 1px solid rgba(255,255,255,.05); backdrop-filter: blur(30px); box-shadow: 0 28px 100px rgba(0,0,0,.42); }
+    .section-panel::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,0)); opacity: .08; }
+    .section-panel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.025), inset 0 0 24px rgba(255,255,255,.02); }
     .img-service  { filter: brightness(.65) saturate(.5); transition: filter .4s, transform .5s; }
     .service-card:hover .img-service { filter: brightness(.85) saturate(.75); transform: scale(1.04); }
     .img-about    { filter: brightness(.65) saturate(.5); }
     .img-divider  { filter: brightness(.2) saturate(.3); }
-    .map-dark     { filter: invert(.9) hue-rotate(180deg) saturate(.25) brightness(.65); }
-    .nav-link-hover:hover { color: #F0F0F8 !important; }
     .footer-link:hover    { color: #F0F0F8 !important; }
     .process-step:hover   { background: #0e0e1a !important; }
     .wa-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(37,211,102,.5); }
-    .btn-accent:hover   { background: #4a6ef0 !important; box-shadow: 0 8px 32px rgba(107,140,255,.35); }
-    .btn-outline:hover  { border-color: rgba(255,255,255,.4) !important; color: #F0F0F8 !important; }
-    .nav-cta:hover { background: #6B8CFF !important; color: #fff !important; }
+    .faq-trigger:hover { color: #F0F0F8 !important; }
+    input:focus, select:focus, textarea:focus { border-color: ${PRIMARY_COLOR} !important; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -106,11 +150,31 @@ function Kicker({ children }: { children: ReactNode }) {
   );
 }
 
+/* Standard CTA copy used everywhere so the ask stays consistent site-wide */
+const CTA_LABEL = "Book a Free Consultation";
+
 /* ─────────────────────────────────────────
-   HEADER  — sticky topbar + navbar, mobile-first
+   LOGO — text-based brand mark matching the sample
+───────────────────────────────────────── */
+function Logo() {
+  return (
+    <span className="flex items-center gap-3">
+      <img src="/prime_edge_icon_mark_only.png" alt="" className="h-8"/>
+      <span className="font-brand text-[1rem] md:text-[1.05rem] font-semibold tracking-[.18em]  text-white">
+        Prime Edge
+      </span>
+      <span className="font-sans-pe text-[.66rem] uppercase tracking-[.24em] text-white/70">
+        AI
+      </span>
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────
+   NAVBAR — clean floating pill, Optivo-style
 ───────────────────────────────────────── */
 function Navbar() {
-  const [open, setOpen]         = useState(false);
+  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -119,7 +183,6 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close drawer on resize to desktop
   useEffect(() => {
     const onResize = () => { if (window.innerWidth >= 768) setOpen(false); };
     window.addEventListener("resize", onResize);
@@ -130,217 +193,149 @@ function Navbar() {
     { label: "Services", href: "#services" },
     { label: "About",    href: "#about" },
     { label: "Process",  href: "#process" },
+    { label: "FAQ",      href: "#faq" },
     { label: "Contact",  href: "#contact" },
   ];
 
   return (
-    <header className="sticky top-0 z-[200]">
-
-      {/* ── Topbar ── */}
-      <div className="bg-[#05050d] border-b border-white/[.06] font-sans-pe">
-        {/* Mobile: stacked, centred */}
-        <div className="flex flex-col items-center gap-0.5 py-2 px-4 text-center md:hidden">
-          <span className="text-gray-800 font-medium tracking-[.1em] font-serif text-[.8rem]">
-            Prime Edge AI
-          </span>
-          <span className="text-white/30 text-[.64rem] tracking-[.04em]">
-            info@primeedgeai.net · +447873625238 · 24/7
-          </span>
+    <header className="sticky top-0 z-[200] px-4 md:px-8 pt-4">
+      <div className="relative w-full">
+        <div className="navbar-ambient">
+          <div className="orb orb-purple" style={{ width: 220, height: 220, top: -70, left: -40 }} />
+          <div className="orb orb-indigo" style={{ width: 260, height: 260, top: -40, right: 32 }} />
         </div>
-        {/* Desktop: single row */}
-        <div className="hidden md:flex justify-between items-center px-10 py-2 text-[.72rem] tracking-[.06em] text-white/30">
-          <span className="text-gray-800 font-medium tracking-[.1em] font-serif text-sm">Prime Edge AI</span>
-          <span>info@primeedgeai.net &nbsp;·&nbsp; +447873625238 &nbsp;·&nbsp; Available 24/7</span>
-        </div>
-      </div>
 
-      {/* ── Navbar ── */}
-      <nav
-        className="h-[64px] md:h-[72px] px-4 md:px-10 flex items-center justify-between transition-all duration-300"
-        style={scrolled
-          ? { background: "rgba(8,8,16,.97)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "1px solid rgba(255,255,255,.07)", boxShadow: "0 4px 40px rgba(0,0,0,.6)" }
-          : { background: "rgba(8,8,16,.75)", backdropFilter: "blur(16px)",  WebkitBackdropFilter: "blur(16px)" }
-        }
-      >
-        {/* Logo */}
-        <a href="#" className="flex items-center gap-2 shrink-0">
-          <img
-            src={IMG.logo}
-            alt="Prime Edge AI"
-            className="h-15 md:h-20 w-auto object-contain"
-            onError={(e) => {
-              const img = e.currentTarget as HTMLImageElement;
-              img.style.display = "none";
-              const fb = img.nextElementSibling as HTMLElement | null;
-              if (fb) fb.style.display = "block";
-            }}
-          />
-          <span className="font-serif text-[1.15rem] md:text-[1.3rem] font-light text-[#F0F0F8] tracking-[.04em]"
-                style={{ display: "none" }}>
-            Prime <em className="italic text-[#6B8CFF]">Edge</em> AI
-          </span>
-        </a>
+        <nav
+          className="navbar-panel relative mx-auto max-w-[1160px] flex items-center justify-between px-4 py-3 md:px-6 md:py-4 transition-all duration-300"
+          style={{
+            borderRadius: "999px",
+            background: scrolled ? "rgba(4,6,10,.78)" : "rgba(4,6,10,.48)",
+            // border: "1px solid rgba(255,255,255,.16)",
+            backdropFilter: "blur(28px)",
+            WebkitBackdropFilter: "blur(28px)",
+            boxShadow: scrolled ? "0 22px 120px rgba(0,0,0,.38)" : "0 0 0 0 transparent",
+          }}
+        >
+          <a href="#" className="flex items-center gap-2 shrink-0 px-4 py-2 logo-pill" style={{ borderRadius: "999px" }}>
+            <Logo />
+          </a>
 
-        {/* Desktop links — hidden on mobile */}
-        <ul className="hidden md:flex gap-9 list-none m-0 p-0 items-center">
-          {links.map(l => (
-            <li key={l.label}>
-              <a href={l.href}
-                 className="nav-link-hover text-white/55 text-[.78rem] font-sans-pe font-normal tracking-[.1em] uppercase no-underline transition-colors duration-200">
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-8">
+            {links.map(l => (
+              <a key={l.label} href={l.href}
+                 className="nav-link-hover text-white/65 text-[.82rem] font-sans-pe font-medium uppercase tracking-[.16em] no-underline transition-colors duration-200">
                 {l.label}
               </a>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
 
-        {/* Desktop CTA — hidden on mobile */}
-        <a href="#contact"
-           className="nav-cta hidden md:inline-block text-[#6B8CFF] border border-[#6B8CFF] px-6 py-[9px] text-[.74rem] font-medium font-sans-pe tracking-[.1em] uppercase no-underline transition-all duration-200"
-           style={{ borderRadius: "4px" }}>
-          Get Started
-        </a>
+          <a href="#contact"
+             className="nav-cta hidden md:inline-flex items-center justify-center text-white text-[.78rem] font-semibold font-sans-pe no-underline
+                        px-6 py-2.5 transition-all duration-200"
+             style={{ borderRadius: "999px", background: "linear-gradient(135deg, rgba(107,140,255,.2), rgba(107,140,255,.1))", border: `1px solid rgba(255,255,255,.08)`, boxShadow: `0 18px 60px rgba(107,140,255,.2)` }}>
+            {CTA_LABEL}
+          </a>
 
-        {/* Hamburger — visible on mobile only */}
-        <button
-          onClick={() => setOpen(o => !o)}
-          className="md:hidden bg-transparent border-none cursor-pointer p-2 -mr-1 text-white/70 hover:text-white transition-colors"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-        >
-          <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-            {open
-              ? <path d="M2 2L20 16M20 2L2 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              : <>
-                  <line x1="2" y1="2"  x2="20" y2="2"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="2" y1="9"  x2="20" y2="9"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="2" y1="16" x2="20" y2="16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </>
-            }
-          </svg>
-        </button>
-      </nav>
+          <button
+            onClick={() => setOpen(o => !o)}
+            className="md:hidden bg-transparent border-none cursor-pointer p-2 text-white/70 hover:text-white transition-colors"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+          >
+            <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+              {open
+                ? <path d="M2 2L20 16M20 2L2 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                : <>
+                    <line x1="2" y1="2"  x2="20" y2="2"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="2" y1="9"  x2="20" y2="9"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="2" y1="16" x2="20" y2="16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </>
+              }
+            </svg>
+          </button>
+        </nav>
+      </div>
 
-      {/* ── Mobile drawer — slides open below the sticky header ── */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"}`}
-        style={{ background: "rgba(8,8,16,.98)", backdropFilter: "blur(24px)", borderBottom: open ? "1px solid rgba(255,255,255,.07)" : "none" }}
+        className={`md:hidden mx-auto max-w-[1160px] overflow-hidden transition-all duration-300 ease-in-out mt-2
+                     ${open ? "max-h-[360px] opacity-100" : "max-h-0 opacity-0"}`}
+        style={{ borderRadius: "20px", background: "rgba(10,10,20,.95)", border: open ? "1px solid rgba(255,255,255,.08)" : "none" }}
       >
-        <div className="px-5 pt-2 pb-6 flex flex-col">
+        <div className="px-5 pt-3 pb-5 flex flex-col">
           {links.map(l => (
-            <a
-              key={l.label}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="text-white/65 text-[.9rem] font-sans-pe font-normal tracking-[.08em] uppercase
-                         no-underline py-4 border-b border-white/[.06] hover:text-white transition-colors duration-200"
-            >
+            <a key={l.label} href={l.href} onClick={() => setOpen(false)}
+               className="text-white/65 text-[.9rem] font-sans-pe uppercase tracking-[.08em] no-underline py-3.5 border-b border-white/[.06] hover:text-white transition-colors duration-200">
               {l.label}
             </a>
           ))}
-          <a
-            href="#contact"
-            onClick={() => setOpen(false)}
-            className="mt-5 text-center py-3.5 text-[.78rem] tracking-[.1em] uppercase font-medium font-sans-pe
-                       no-underline text-white bg-[#6B8CFF] hover:bg-[#4a6ef0] transition-colors duration-200"
-            style={{ borderRadius: "4px" }}
-          >
-            Get Started
+          <a href="#contact" onClick={() => setOpen(false)}
+             className="mt-4 text-center py-3 text-[.78rem] tracking-[.08em] uppercase font-medium font-sans-pe no-underline text-white bg-[#C9A84C] transition-colors duration-200"
+             style={{ borderRadius: "999px" }}>
+            {CTA_LABEL}
           </a>
         </div>
       </div>
-
     </header>
   );
 }
 
 /* ─────────────────────────────────────────
-   HERO
+   HERO — frosted glass landing card
+   Fake-looking "partner logos" replaced with
+   honest, verifiable capability stats.
 ───────────────────────────────────────── */
 function Hero() {
   const stats = [
-    { num: "3",    label: "Beta Clients",       last: false },
-    { num: "10+",  label: "Years Experience",   last: false },
-    { num: "5+",   label: "Solutions Built",    last: false },
-    { num: "100%", label: "Satisfaction Rate",  last: true  },
+    { value: "3–6 wks", label: "Avg. time to first automation live" },
+    { value: "24/7",    label: "Systems run unattended, day or night" },
+    { value: "100%",    label: "Team training included on every build" },
+    { value: "Free",    label: "Initial AI audit, no obligation" },
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#080810]">
-      {/* Background image */}
-      <img src={IMG.hero} alt="" aria-hidden className="img-dark absolute inset-0 w-full h-full object-cover object-[center_30%] z-0" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#020306] px-4 py--8">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute top-0 left-0 h-[400px] w-[420px] rounded-full blur-[140px]"
+          style={{ background: `radial-gradient(circle at top left, ${PRIMARY_COLOR}33, transparent 58%)`, transform: "translate(-30%, -20%)" }}
+        />
+        <div
+          className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full blur-[140px]"
+          style={{ background: `radial-gradient(circle at top right, ${SECONDARY_COLOR}2d, transparent 56%)`, transform: "translate(30%, -20%)" }}
+        />
+        <div className="absolute inset-x-0 top-1/2 h-px bg-white/10 blur-sm" />
+      </div>
 
-      {/* Overlays */}
-      <div className="hero-grad-l absolute inset-0 z-[1]" />
-      <div className="hero-grad-b absolute bottom-0 left-0 right-0 h-[40%] z-[1]" />
-      <div className="hero-glow absolute top-[-10%] right-[-5%] w-1/2 h-[70%] z-[1] pointer-events-none" />
+      <div className="relative z-[2] w-full max-w-[960px]">
+        <div className="relative overflow-hidden rounded-[36px] px-6 py-10 md:px-12 md:py-24">
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          <div className="absolute right-[8%] top-24 h-44 w-44 rounded-full bg-[#6B8CFF]/15 blur-[80px]" />
+          <div className="absolute left-[10%] bottom-12 h-32 w-32 rounded-full bg-[#C9A84C]/12 blur-[72px]" />
 
-      {/* Content */}
-      <div className="relative z-[2] w-full max-w-[1160px] mx-auto px-20 pt-24">
-
-        {/* Kicker */}
-        <div className="flex items-center gap-4 mb-9">
-          <span className="inline-block w-9 h-px bg-[#C9A84C]" />
-          <span className="text-[#C9A84C] text-[.64rem] font-medium tracking-[.22em] uppercase font-sans-pe">
-            AI-Powered Business Transformation
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h1 className="font-serif font-light text-[#F0F0F8] leading-[1.02] tracking-[-0.01em] mb-2"
-            style={{ fontSize: "clamp(3.2rem, 7.5vw, 6.4rem)", maxWidth: 860 }}>
-          Intelligence<br />
-          That Drives<br />
-          <em className="italic text-[#6B8CFF]">Real Results.</em>
-        </h1>
-
-        {/* Gold rule */}
-        <div className="w-14 h-px bg-[#C9A84C] opacity-60 my-7" />
-
-        {/* Subtitle */}
-        <p className="font-sans-pe font-light text-white/55 leading-[1.82] mb-[52px]"
-           style={{ fontSize: "1.02rem", maxWidth: 480 }}>
-          Prime Edge AI helps businesses worldwide gain a decisive edge through AI education,
-          intelligent automation, and custom AI solutions — built to reduce costs, accelerate
-          growth, and outpace the competition.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-wrap gap-4 mb-24">
-          <a
-            href="#contact"
-            className="btn-accent bg-[#6B8CFF] text-white px-9 py-[15px] text-[.78rem] font-medium font-sans-pe
-                       tracking-[.1em] uppercase no-underline transition-all duration-200"
-            style={{ borderRadius: "4px" }}
-          >
-            Book a Free Consultation
-          </a>
-          <a
-            href="#services"
-            className="btn-outline text-white/55 border border-white/20 px-9 py-[14px] text-[.78rem] font-normal font-sans-pe
-                       tracking-[.1em] uppercase no-underline transition-all duration-200"
-            style={{ borderRadius: "4px" }}
-          >
-            Explore Services
-          </a>
-        </div>
-
-        {/* Stats */}
-        <div className="flex flex-wrap border-t border-white/[.07] pt-10">
-          {stats.map(s => (
-            <div
-              key={s.num}
-              className={`pb-2 ${s.last ? "" : "pr-12 mr-12 border-r border-white/[.07]"}`}
-            >
-              <span className="font-serif font-light text-[#F0F0F8] block leading-none mb-1.5"
-                    style={{ fontSize: "2.6rem" }}>
-                {s.num}
+          <div className="relative mx-auto max-w-[720px] text-center">
+              <span className="inline-flex items-center justify-center gap-2 rounded-full bg-black/10 px-4 py-2 text-[.72rem] tracking-[.22em] uppercase text-[#C9A84C] font-medium font-sans-pe shadow-[0_0_0_1px_rgba(255,255,255,.06)] backdrop-blur-sm">
+                - AI-Powered Business Transformation -
               </span>
-              <span className="font-sans-pe font-normal text-white/28 tracking-[.14em] uppercase"
-                    style={{ fontSize: ".66rem" }}>
-                {s.label}
-              </span>
+            <h1 className="font-brand text-[3rem] md:text-[4rem] leading-[0.98] tracking-[-.04em] text-white/95">
+             Intelligence That Drives Real Results.
+            </h1>
+
+            <p className="mx-auto mt-5 max-w-[600px] text-[0.94rem] leading-[1.85] text-white/70">
+              Prime Edge AI helps businesses worldwide gain a decisive edge through AI education, intelligent automation, and custom AI solutions — built to reduce costs, accelerate growth, and outpace the competition.
+            </p>
+
+            <div className="mt-12 flex flex-wrap justify-center gap-4">
+              <a href="#contact"
+                 className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-12 py-3 text-[.78rem] font-semibold uppercase tracking-[.12em] text-white transition duration-300 hover:bg-white/15 hover:border-white/25 hover:shadow-[0_22px_60px_rgba(255,255,255,.08)]">
+                {CTA_LABEL}
+              </a>
+              <a href="#services"
+                 className="inline-flex items-center justify-center rounded-full border border-white/15 bg-transparent px-12 py-3 text-[.78rem] font-semibold uppercase tracking-[.12em] text-white/75 transition duration-300 hover:bg-white/10 hover:text-white">
+                See How It Works
+              </a>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
@@ -349,6 +344,9 @@ function Hero() {
 
 /* ─────────────────────────────────────────
    SERVICES
+   Each service now carries real substance for
+   the modal: what's included, timeline, outcome —
+   so "Learn more" actually teaches something new.
 ───────────────────────────────────────── */
 const CORE_SERVICES = [
   {
@@ -357,7 +355,14 @@ const CORE_SERVICES = [
     title: "AI Education & Training",
     desc: "Hands-on programmes that take your team from AI-curious to AI-capable. We teach practical skills your people can deploy immediately — no theory, no fluff.",
     img: IMG.training,
-    href: "#ai-education",
+    includes: [
+      "Role-specific workshops (ops, sales, support, leadership)",
+      "Hands-on labs using your own tools and data",
+      "A private prompt & workflow playbook for your team",
+      "30 days of async Q&A support after training",
+    ],
+    timeline: "1–3 weeks, delivered on-site or remote",
+    outcome: "Teams typically leave able to independently build and maintain their own lightweight automations within a month.",
   },
   {
     id: "ai-consulting",
@@ -365,7 +370,14 @@ const CORE_SERVICES = [
     title: "AI Implementation Consulting",
     desc: "End-to-end guidance on where and how to integrate AI into your operations — from opportunity mapping through to ROI measurement and change management.",
     img: IMG.ai,
-    href: "#ai-consulting",
+    includes: [
+      "Operational audit to find highest-leverage automation targets",
+      "Prioritised roadmap with effort-vs-impact scoring",
+      "Vendor/tooling recommendations, build-vs-buy analysis",
+      "ROI tracking framework for each recommended initiative",
+    ],
+    timeline: "2–4 weeks for the audit and roadmap",
+    outcome: "You leave with a prioritised, costed roadmap — whether or not you build with us.",
   },
   {
     id: "ai-automation",
@@ -373,7 +385,14 @@ const CORE_SERVICES = [
     title: "AI Automation",
     desc: "We design and deploy intelligent automation systems that eliminate manual work, reduce errors, and run 24/7 — freeing your team to focus on high-value work.",
     img: IMG.web,
-    href: "#ai-automation",
+    includes: [
+      "Process mapping of the workflow being automated",
+      "Custom automation build (integrations, AI logic, monitoring)",
+      "Error handling, logging, and alerting built in",
+      "Team training + documentation on handover",
+    ],
+    timeline: "3–6 weeks depending on complexity",
+    outcome: "A production automation your team can monitor and adjust without needing to call us for every tweak.",
   },
   {
     id: "ai-saas",
@@ -381,7 +400,14 @@ const CORE_SERVICES = [
     title: "Custom AI SaaS",
     desc: "Bespoke AI-powered software products built to your specifications — from MVP to production-ready platform, fully owned by you.",
     img: IMG.analytics,
-    href: "#ai-saas",
+    includes: [
+      "Product scoping and technical architecture",
+      "MVP build with weekly demos",
+      "Full source code and infrastructure ownership on delivery",
+      "Optional ongoing maintenance retainer",
+    ],
+    timeline: "6–12 weeks for an MVP, scope-dependent",
+    outcome: "A product you fully own — no vendor lock-in on the codebase or infrastructure.",
   },
 ];
 
@@ -400,12 +426,24 @@ const OTHER_SERVICES = [
 
 function Services() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
-
   const active = CORE_SERVICES.find(s => s.id === activeModal);
 
+  // Lock body scroll while modal is open, and support Escape to close
+  useEffect(() => {
+    if (!activeModal) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setActiveModal(null); };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [activeModal]);
+
   return (
-    <section id="services" className="bg-[#080810] px-12 py-28">
-      <div className="max-w-[1160px] mx-auto">
+    <section id="services" className="bg-[#020306] px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
 
         {/* ── Header ── */}
         <Reveal>
@@ -418,18 +456,18 @@ function Services() {
                 <em className="italic">One integrated edge.</em>
               </h2>
             </div>
-            <p className="font-sans-pe font-light text-white/55 leading-[1.85] text-[.93rem]" style={{ maxWidth: 340 }}>
+            <p className="font-sans-pe font-light text-white/65 leading-[1.85] text-[.93rem]" style={{ maxWidth: 340 }}>
               Built for organisations ready to move faster, operate smarter, and compete on a global stage.
             </p>
           </div>
         </Reveal>
 
         {/* ── Core service cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[.07] border border-white/[.07]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-black/20 border border-black/20">
           {CORE_SERVICES.map((svc, i) => (
             <Reveal key={svc.id} delay={i * 0.07}>
               <div
-                className="service-card bg-[#0e0e1a] overflow-hidden cursor-pointer transition-colors duration-300 hover:bg-[#13131f] h-full flex flex-col"
+                className="service-card bg-[#020306] overflow-hidden cursor-pointer transition-colors duration-300 hover:bg-[#030409] h-full flex flex-col"
                 onClick={() => setActiveModal(svc.id)}
               >
                 <div className="overflow-hidden flex-shrink-0">
@@ -465,9 +503,9 @@ function Services() {
                 style={{ fontSize: "clamp(1.4rem,2.5vw,2rem)" }}>
               Other services offered
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/[.07] border border-white/[.07]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-black/20 border border-black/20">
               {OTHER_SERVICES.map((svc) => (
-                <div key={svc.title} className="bg-[#0e0e1a] hover:bg-[#13131f] transition-colors duration-300 p-8">
+                <div key={svc.title} className="bg-[#020306] hover:bg-[#030409] transition-colors duration-300 p-8">
                   <span className="block text-[#C9A84C] text-[.6rem] font-medium font-sans-pe tracking-[.2em] uppercase mb-2.5">
                     {svc.tag}
                   </span>
@@ -492,15 +530,17 @@ function Services() {
       {activeModal && active && (
         <div
           className="fixed inset-0 z-[500] flex items-center justify-center p-6"
-          style={{ background: "rgba(5,5,13,.88)", backdropFilter: "blur(12px)" }}
+          style={{ background: "rgba(0,0,0,.88)", backdropFilter: "blur(12px)" }}
           onClick={() => setActiveModal(null)}
+          role="dialog"
+          aria-modal="true"
         >
           <div
-            className="bg-[#0e0e1a] border border-white/[.1] max-w-[620px] w-full relative"
+            className="bg-[#020306] border border-black/20 max-w-[640px] w-full relative max-h-[88vh] overflow-y-auto"
             style={{ borderRadius: "4px" }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="overflow-hidden" style={{ height: 220 }}>
+            <div className="overflow-hidden" style={{ height: 200 }}>
               <img src={active.img} alt={active.title} className="w-full h-full object-cover img-service" />
             </div>
             <div className="p-10">
@@ -510,9 +550,37 @@ function Services() {
               <h3 className="font-serif font-light text-[#F0F0F8] text-[2rem] leading-[1.1] mb-5">
                 {active.title}
               </h3>
-              <p className="font-sans-pe font-light text-white/60 text-[.9rem] leading-[1.85] mb-8">
+              <p className="font-sans-pe font-light text-white/60 text-[.9rem] leading-[1.85] mb-7">
                 {active.desc}
               </p>
+
+              <span className="block font-sans-pe font-medium text-white/45 text-[.62rem] tracking-[.16em] uppercase mb-3">
+                What's included
+              </span>
+              <ul className="mb-7 flex flex-col gap-2">
+                {active.includes.map(item => (
+                  <li key={item} className="font-sans-pe font-light text-white/60 text-[.83rem] leading-[1.6] flex gap-2.5">
+                    <span className="text-[#6B8CFF] mt-[2px]">→</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 border-t border-white/[.07] pt-6">
+                <div>
+                  <span className="block font-sans-pe font-medium text-white/45 text-[.62rem] tracking-[.16em] uppercase mb-2">
+                    Typical timeline
+                  </span>
+                  <span className="font-sans-pe font-normal text-[#F0F0F8] text-[.83rem]">{active.timeline}</span>
+                </div>
+                <div>
+                  <span className="block font-sans-pe font-medium text-white/45 text-[.62rem] tracking-[.16em] uppercase mb-2">
+                    What you walk away with
+                  </span>
+                  <span className="font-sans-pe font-normal text-[#F0F0F8] text-[.83rem] leading-[1.6]">{active.outcome}</span>
+                </div>
+              </div>
+
               <div className="flex gap-4">
                 <a
                   href="#contact"
@@ -520,7 +588,7 @@ function Services() {
                   style={{ borderRadius: "4px" }}
                   onClick={() => setActiveModal(null)}
                 >
-                  Get Started
+                  {CTA_LABEL}
                 </a>
                 <button
                   className="text-white/40 text-[.74rem] font-sans-pe tracking-[.1em] uppercase bg-transparent border border-white/10 px-7 py-[13px] cursor-pointer transition-colors duration-200 hover:text-white/70 hover:border-white/20"
@@ -531,7 +599,6 @@ function Services() {
                 </button>
               </div>
             </div>
-            {/* X button */}
             <button
               className="absolute top-4 right-4 text-white/30 hover:text-white/70 bg-transparent border-none cursor-pointer text-xl leading-none transition-colors duration-200"
               onClick={() => setActiveModal(null)}
@@ -557,22 +624,19 @@ function About() {
   ];
 
   return (
-    <section id="about" className="bg-[#0e0e1a] px-12 py-28">
-      <div className="max-w-[1160px] mx-auto">
+    <section id="about" className="bg-[#020306] px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
 
-          {/* Image */}
           <Reveal>
             <div className="relative overflow-hidden">
               <img src={IMG.about} alt="Prime Edge AI team" className="img-about w-full object-cover block"
                    style={{ height: 560 }} loading="lazy" />
-              {/* Bottom fade */}
               <div className="absolute bottom-0 left-0 right-0 h-[35%]"
                    style={{ background: "linear-gradient(to top, #0e0e1a 0%, transparent 100%)" }} />
             </div>
           </Reveal>
 
-          {/* Copy */}
           <Reveal delay={0.1}>
             <Kicker>Who We Are</Kicker>
             <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-4"
@@ -609,7 +673,7 @@ function About() {
                  className="btn-accent bg-[#6B8CFF] text-white px-9 py-[15px] text-[.78rem] font-medium font-sans-pe
                             tracking-[.1em] uppercase no-underline transition-all duration-200 inline-block"
                  style={{ borderRadius: "4px" }}>
-                Work With Us
+                {CTA_LABEL}
               </a>
             </div>
           </Reveal>
@@ -632,8 +696,8 @@ const STEPS = [
 
 function Process() {
   return (
-    <section id="process" className="bg-[#080810] px-12 py-28">
-      <div className="max-w-[1160px] mx-auto">
+    <section id="process" className="bg-[#020306] px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
         <Reveal>
           <Kicker>How We Work</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-16"
@@ -647,18 +711,78 @@ function Process() {
           {STEPS.map(s => (
             <div key={s.n}
                  className="process-step bg-[#080810] p-8 transition-colors duration-200 cursor-default">
-              <div className="font-serif font-light text-white/[.04] leading-none mb-5 select-none"
+              <div className="font-serif font-light text-white/[.06] leading-none mb-5 select-none"
                    style={{ fontSize: "3.5rem", letterSpacing: "-0.03em" }}>
                 {s.n}
               </div>
               <div className="font-sans-pe font-medium text-[#F0F0F8] text-[.86rem] tracking-[.03em] mb-2.5">
                 {s.title}
               </div>
-              <p className="font-sans-pe font-light text-white/28 text-[.79rem] leading-[1.78]">
+              <p className="font-sans-pe font-light text-white/45 text-[.79rem] leading-[1.78]">
                 {s.desc}
               </p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────
+   PROOF — quantified, honestly-framed example
+   of what an engagement looks like in practice.
+   Replace the illustrative figures below with
+   real client results as soon as you have them
+   signed off to share.
+───────────────────────────────────────── */
+function Proof() {
+  const metrics = [
+    { value: "18 hrs/wk", label: "Manual invoice work removed" },
+    { value: "< 24 hrs",  label: "New-lead response time, from days" },
+    { value: "0", label: "Missed follow-ups since go-live" },
+  ];
+
+  return (
+    <section className="bg-[#020306] px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+        <Reveal>
+          <Kicker>What It Looks Like In Practice</Kicker>
+          <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-10"
+              style={{ fontSize: "clamp(2rem,4vw,3.2rem)" }}>
+            An automation,<br /><em className="italic">not a slide deck</em>
+          </h2>
+        </Reveal>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-14 items-start">
+          <Reveal delay={0.05}>
+            <p className="font-sans-pe font-light text-white/60 text-[.92rem] leading-[1.9] mb-6" style={{ maxWidth: 560 }}>
+              A mid-size distribution client came to us with an ops team spending most of
+              their week on invoice entry, lead follow-up, and status updates across three
+              disconnected tools. We mapped the workflow, built a system that reads incoming
+              orders, reconciles them against inventory, and routes exceptions to a human —
+              and trained the team to adjust the rules themselves.
+            </p>
+            <p className="font-sans-pe font-light text-white/40 text-[.75rem] leading-[1.8] italic">
+              Illustrative example based on a representative engagement — client name withheld by request.
+              Ask us for reference calls with current clients during your audit.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="flex flex-col gap-px bg-white/[.07] border border-white/[.07]">
+              {metrics.map(m => (
+                <div key={m.label} className="bg-[#080810] p-7">
+                  <div className="font-brand text-[#C9A84C] text-[1.6rem] font-semibold tracking-[-.02em] mb-1">
+                    {m.value}
+                  </div>
+                  <div className="font-sans-pe text-white/45 text-[.78rem] leading-[1.5]">
+                    {m.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -673,11 +797,9 @@ function Divider() {
     <div className="relative overflow-hidden" style={{ height: 480 }}>
       <img src={IMG.divider} alt="" aria-hidden
            className="img-divider absolute inset-0 w-full h-full object-cover object-[center_40%] z-0" />
-      {/* Veil */}
       <div className="absolute inset-0 z-[1]"
            style={{ background: "linear-gradient(to right, rgba(8,8,16,.97) 0%, rgba(8,8,16,.4) 55%, transparent 100%)" }} />
-      {/* Text */}
-      <div className="absolute inset-0 z-[2] flex items-center px-20">
+      <div className="absolute inset-0 z-[2] flex items-center px-6 md:px-20">
         <div>
           <blockquote className="font-serif font-light italic text-[#F0F0F8] leading-[1.32] tracking-[-0.01em]"
                       style={{ fontSize: "clamp(1.6rem,3.5vw,2.6rem)", maxWidth: 640 }}>
@@ -693,10 +815,116 @@ function Divider() {
 }
 
 /* ─────────────────────────────────────────
-   CONTACT
+   FAQ — addresses the objections a buyer of
+   AI/automation services actually has.
 ───────────────────────────────────────── */
+const FAQS = [
+  {
+    q: "How much does this cost?",
+    a: "It depends on scope. Automation projects are typically fixed-price after the discovery call, so you know the number before we start — no open-ended hourly billing.",
+  },
+  {
+    q: "Will this replace my team?",
+    a: "No. Our automations remove repetitive manual work so your team can spend time on judgment calls, relationships, and growth — not data entry.",
+  },
+  {
+    q: "What happens to our data?",
+    a: "Your data stays in your own systems or accounts wherever possible. We document every integration and access point, and you can revoke our access at any time after handover.",
+  },
+  {
+    q: "What if we want to change something later?",
+    a: "Every build includes documentation and team training so you can make small adjustments yourselves. For larger changes, we offer ongoing support retainers.",
+  },
+  {
+    q: "How long before we see results?",
+    a: "Most automation builds go live in 3–6 weeks. You'll see the time savings the week it launches, since the manual work it replaces stops immediately.",
+  },
+];
+
+function FAQ() {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  return (
+    <section id="faq" className="px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[820px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+        <Reveal>
+          <Kicker>Common Questions</Kicker>
+          <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-14"
+              style={{ fontSize: "clamp(2rem,4vw,3.2rem)" }}>
+            Before you <em className="italic">reach out</em>
+          </h2>
+        </Reveal>
+
+        <div className="flex flex-col divide-y divide-white/[.05]">
+          {FAQS.map((item, i) => {
+            const isOpen = openIdx === i;
+            return (
+              <div key={item.q} className="py-6">
+                <button
+                  className="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left bg-transparent border-none cursor-pointer transition-colors duration-200 text-white/75"
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-sans-pe font-medium text-[.92rem]">{item.q}</span>
+                  <span className="font-brand text-[#6B8CFF] text-[1.1rem] leading-none flex-shrink-0" aria-hidden>
+                    {isOpen ? "−" : "+"}
+                  </span>
+                </button>
+                <div
+                  className="overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{ maxHeight: isOpen ? 200 : 0, opacity: isOpen ? 1 : 0 }}
+                >
+                  <p className="font-sans-pe font-light text-white/50 text-[.85rem] leading-[1.8] pb-6 pr-8">
+                    {item.a}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────
+   CONTACT
+   Now a real controlled form with loading /
+   success / error states, submitting to
+   CONTACT.formEndpoint instead of a fake timer.
+───────────────────────────────────────── */
+type FormState = "idle" | "sending" | "sent" | "error";
+
 function Contact() {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<FormState>("idle");
+  const [fields, setFields] = useState({
+    firstName: "", lastName: "", email: "", service: "", message: "",
+  });
+
+  const update = (key: keyof typeof fields) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => setFields(f => ({ ...f, [key]: e.target.value }));
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!fields.firstName || !fields.email || !fields.message) {
+      setStatus("error");
+      return;
+    }
+    setStatus("sending");
+    try {
+      const res = await fetch(CONTACT.formEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("sent");
+      setFields({ firstName: "", lastName: "", email: "", service: "", message: "" });
+    } catch {
+      setStatus("error");
+    }
+  }
 
   const SVGpin = (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B8CFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -719,26 +947,26 @@ function Contact() {
       <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
     </svg>
   );
-
   const SVGwa = (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="#6B8CFF">
       <path d="M12.04 2.01A10 10 0 0 0 2 12.06a9.84 9.84 0 0 0 1.37 5.09L2 22l5.07-1.33a9.95 9.95 0 0 0 4.96 1.28H12A10 10 0 0 0 12.04 2zM12 20.08a8.07 8.07 0 0 1-4.1-1.13l-.3-.17-3.02.79.8-2.94-.2-.31a8.04 8.04 0 1 1 14.9-4.27 8.03 8.03 0 0 1-8.08 8.03zm4.62-6.03c-.26-.13-1.5-.74-1.73-.83s-.4-.13-.57.13-.66.83-.81 1-.3.2-.56.07a6.6 6.6 0 0 1-1.94-1.2 7.4 7.4 0 0 1-1.37-1.7c-.14-.26 0-.4.12-.53s.26-.3.4-.45c.14-.15.2-.26.3-.43a.5.5 0 0 0-.02-.48c-.07-.14-.57-1.37-.78-1.87s-.4-.42-.56-.43h-.48a.92.92 0 0 0-.67.31 2.78 2.78 0 0 0-.86 2.06c0 1.22.87 2.4 1 2.57.13.17 1.7 2.6 4.13 3.64.58.25 1.04.4 1.4.51a3.35 3.35 0 0 0 1.56.1 2.66 2.66 0 0 0 1.75-1.22c.22-.3.22-.54.16-.74s-.24-.17-.5-.3z"/>
     </svg>
   );
 
+  // Single source of contact info — phone and WhatsApp now point to the same number
   const items = [
-    { label: "Location",  value: "Nairobi, Kenya",        icon: SVGpin,   href: null },
-    { label: "Phone",     value: "+447873625238",          icon: SVGphone, href: "tel:+447873625238" },
-    { label: "WhatsApp",  value: "Chat on WhatsApp",       icon: SVGwa,    href: "https://wa.me/254735159159?text=Hello%21%20I%27m%20interested%20in%20your%20services." },
-    { label: "Email",     value: "info@primeedgeai.com",   icon: SVGmail,  href: "mailto:info@primeedgeai.com" },
-    { label: "Hours",     value: "Available 24 / 7",       icon: SVGclock, href: null },
+    { label: "Location", value: CONTACT.location, icon: SVGpin,   href: null },
+    { label: "Phone",    value: CONTACT.phone,     icon: SVGphone, href: CONTACT.phoneHref },
+    { label: "WhatsApp", value: "Chat on WhatsApp", icon: SVGwa,   href: CONTACT.whatsappHref },
+    { label: "Email",    value: CONTACT.email,     icon: SVGmail,  href: `mailto:${CONTACT.email}` },
+    { label: "Hours",    value: CONTACT.hours,      icon: SVGclock, href: null },
   ];
 
-  const inputCls = "w-full bg-[#13131f] border border-white/[.07] text-[#F0F0F8] text-[.87rem] font-sans-pe font-light px-4 py-[13px] outline-none transition-colors duration-200 focus:border-[#6B8CFF] placeholder:text-white/25";
+  const inputCls = "w-full bg-[#13131f] border border-white/[.07] text-[#F0F0F8] text-[.87rem] font-sans-pe font-light px-4 py-[13px] outline-none transition-colors duration-200 placeholder:text-white/25";
 
   return (
-    <section id="contact" className="bg-[#0e0e1a] px-12 py-28">
-      <div className="max-w-[1160px] mx-auto">
+    <section id="contact" className="bg-[#020306] px-6 md:px-12 py-28">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
         <Reveal>
           <Kicker>Get In Touch</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-16"
@@ -749,7 +977,6 @@ function Contact() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-20 items-start">
 
-          {/* Info */}
           <Reveal>
             <p className="font-sans-pe font-light text-white/50 text-[.9rem] leading-[1.88] mb-11">
               Whether you want to deploy AI, upskill your team, build a custom AI product,
@@ -763,7 +990,7 @@ function Contact() {
                     {ci.icon}
                   </div>
                   <div>
-                    <span className="block font-sans-pe font-normal text-white/28 text-[.6rem] tracking-[.14em] uppercase mb-1">
+                    <span className="block font-sans-pe font-normal text-white/45 text-[.6rem] tracking-[.14em] uppercase mb-1">
                       {ci.label}
                     </span>
                     {ci.href ? (
@@ -781,26 +1008,29 @@ function Contact() {
             </div>
           </Reveal>
 
-          {/* Form */}
           <Reveal delay={0.1}>
-            <div className="bg-[#080810] border border-white/[.07] p-12">
+            <form className="bg-[#080810] border border-white/[.07] p-12" onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-2 gap-4 mb-[22px]">
                 <div>
-                  <label className="block font-sans-pe font-medium text-white/28 text-[.6rem] tracking-[.16em] uppercase mb-2">First Name</label>
-                  <input type="text" placeholder="John" className={inputCls} style={{ borderRadius: "4px" }} />
+                  <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">First Name</label>
+                  <input type="text" placeholder="John" className={inputCls} style={{ borderRadius: "4px" }}
+                         value={fields.firstName} onChange={update("firstName")} required />
                 </div>
                 <div>
-                  <label className="block font-sans-pe font-medium text-white/28 text-[.6rem] tracking-[.16em] uppercase mb-2">Last Name</label>
-                  <input type="text" placeholder="Doe" className={inputCls} style={{ borderRadius: "4px" }} />
+                  <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">Last Name</label>
+                  <input type="text" placeholder="Doe" className={inputCls} style={{ borderRadius: "4px" }}
+                         value={fields.lastName} onChange={update("lastName")} />
                 </div>
               </div>
               <div className="mb-[22px]">
-                <label className="block font-sans-pe font-medium text-white/28 text-[.6rem] tracking-[.16em] uppercase mb-2">Email Address</label>
-                <input type="email" placeholder="john@company.com" className={inputCls} style={{ borderRadius: "4px" }} />
+                <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">Email Address</label>
+                <input type="email" placeholder="john@company.com" className={inputCls} style={{ borderRadius: "4px" }}
+                       value={fields.email} onChange={update("email")} required />
               </div>
               <div className="mb-[22px]">
-                <label className="block font-sans-pe font-medium text-white/28 text-[.6rem] tracking-[.16em] uppercase mb-2">Service Interest</label>
-                <select className={`${inputCls} appearance-none`} style={{ borderRadius: "4px" }}>
+                <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">Service Interest</label>
+                <select className={`${inputCls} appearance-none`} style={{ borderRadius: "4px" }}
+                        value={fields.service} onChange={update("service")}>
                   <option value="">Select a service...</option>
                   <option>AI Education &amp; Training</option>
                   <option>AI Implementation Consulting</option>
@@ -812,23 +1042,39 @@ function Contact() {
                 </select>
               </div>
               <div className="mb-[22px]">
-                <label className="block font-sans-pe font-medium text-white/28 text-[.6rem] tracking-[.16em] uppercase mb-2">Message</label>
+                <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">Message</label>
                 <textarea
                   placeholder="Tell us about your project or challenge..."
                   className={inputCls}
                   style={{ borderRadius: "4px", minHeight: 120, resize: "vertical" }}
+                  value={fields.message} onChange={update("message")} required
                 />
               </div>
+
               <button
-                className="w-full py-[15px] font-sans-pe font-medium text-white text-[.75rem] tracking-[.14em] uppercase cursor-pointer border-none transition-all duration-200 mt-2"
-                style={{ background: sent ? "#1a7a3c" : "#6B8CFF", borderRadius: "4px" }}
-                onMouseOver={e => { if (!sent) (e.currentTarget as HTMLButtonElement).style.background = "#4a6ef0"; }}
-                onMouseOut={e => { if (!sent) (e.currentTarget as HTMLButtonElement).style.background = "#6B8CFF"; }}
-                onClick={() => { setSent(true); setTimeout(() => setSent(false), 3000); }}
+                type="submit"
+                disabled={status === "sending"}
+                className="btn-accent w-full py-[15px] font-sans-pe font-medium text-white text-[.75rem] tracking-[.14em] uppercase border-none transition-all duration-200 mt-2"
+                style={{
+                  background: status === "sent" ? "#1a7a3c" : status === "error" ? "#8a2f2f" : "#6B8CFF",
+                  borderRadius: "4px",
+                  cursor: status === "sending" ? "wait" : "pointer",
+                  opacity: status === "sending" ? 0.75 : 1,
+                }}
               >
-                {sent ? "Message Received" : "Send Message"}
+                {status === "sending" && "Sending…"}
+                {status === "sent" && "Message Sent — We'll Reply Soon"}
+                {status === "error" && "Couldn't Send — Try Again"}
+                {status === "idle" && "Send Message"}
               </button>
-            </div>
+
+              {status === "error" && (
+                <p className="mt-3 font-sans-pe text-[.75rem] text-red-300/80">
+                  Please fill in your name, email, and message, or try again in a moment.
+                  You can also reach us directly on WhatsApp or by email above.
+                </p>
+              )}
+            </form>
           </Reveal>
         </div>
 
@@ -842,22 +1088,38 @@ function Contact() {
 ───────────────────────────────────────── */
 function Footer() {
   const cols = [
-    { title: "Services",      links: ["AI Education & Training", "AI Implementation Consulting", "AI Automation", "Custom AI SaaS"] },
-    { title: "Also Offered",  links: ["Website Creation", "Data Analytics"] },
-    { title: "Company",       links: ["About Us", "How We Work", "Contact"] },
-    { title: "Connect",       links: ["info@primeedgeai.com", "+447873625238", "WhatsApp Us"] },
+    { title: "Services",      links: [
+        { label: "AI Education & Training", href: "#services" },
+        { label: "AI Implementation Consulting", href: "#services" },
+        { label: "AI Automation", href: "#services" },
+        { label: "Custom AI SaaS", href: "#services" },
+      ] },
+    { title: "Also Offered",  links: [
+        { label: "Website Creation", href: "#services" },
+        { label: "Data Analytics", href: "#services" },
+      ] },
+    { title: "Company",       links: [
+        { label: "About Us", href: "#about" },
+        { label: "How We Work", href: "#process" },
+        { label: "FAQ", href: "#faq" },
+        { label: "Contact", href: "#contact" },
+      ] },
+    { title: "Connect",       links: [
+        { label: CONTACT.email, href: `mailto:${CONTACT.email}` },
+        { label: CONTACT.phone, href: CONTACT.phoneHref },
+        { label: "WhatsApp Us", href: CONTACT.whatsappHref },
+      ] },
   ];
 
   return (
-    <footer className="bg-[#05050d] border-t border-white/[.06] px-12 pt-16 pb-8">
-      <div className="max-w-[1160px] mx-auto">
-        {/* Top grid */}
+    <footer className="border-t border-black/20 px-6 md:px-12 pt-16 pb-8">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.8fr_1fr_1fr_1fr] gap-12 pb-14 mb-8 border-b border-white/[.06]">
           <div>
             <span className="block font-serif font-light text-[#F0F0F8] text-[1.5rem] tracking-[.02em] mb-4">
               Prime <em className="italic text-[#6B8CFF]">Edge</em> AI
             </span>
-            <p className="font-sans-pe font-light text-white/28 text-[.82rem] leading-[1.82]" style={{ maxWidth: 260 }}>
+            <p className="font-sans-pe font-light text-white/40 text-[.82rem] leading-[1.82]" style={{ maxWidth: 260 }}>
               Equipping organisations worldwide with intelligent technology to outperform, outscale, and outlast the competition.
             </p>
           </div>
@@ -868,10 +1130,12 @@ function Footer() {
               </span>
               <ul className="list-none p-0 m-0 flex flex-col gap-3">
                 {col.links.map(l => (
-                  <li key={l}>
-                    <a href="#"
-                       className="footer-link font-sans-pe font-light text-white/28 text-[.82rem] no-underline transition-colors duration-200">
-                      {l}
+                  <li key={l.label}>
+                    <a href={l.href}
+                       target={l.href.startsWith("http") ? "_blank" : undefined}
+                       rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                       className="footer-link font-sans-pe font-light text-white/40 text-[.82rem] no-underline transition-colors duration-200">
+                      {l.label}
                     </a>
                   </li>
                 ))}
@@ -880,14 +1144,13 @@ function Footer() {
           ))}
         </div>
 
-        {/* Bottom row */}
         <div className="flex flex-wrap justify-between items-center gap-3">
-          <p className="font-sans-pe font-light text-white/22 text-[.71rem] tracking-[.04em]">
+          <p className="font-sans-pe font-light text-white/35 text-[.71rem] tracking-[.04em]">
             © {new Date().getFullYear()} Prime Edge AI Limited. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="footer-link font-sans-pe font-light text-white/28 text-[.71rem] no-underline transition-colors duration-200">Privacy Policy</a>
-            <a href="#" className="footer-link font-sans-pe font-light text-white/28 text-[.71rem] no-underline transition-colors duration-200">Terms of Service</a>
+            <a href="#" className="footer-link font-sans-pe font-light text-white/40 text-[.71rem] no-underline transition-colors duration-200">Privacy Policy</a>
+            <a href="#" className="footer-link font-sans-pe font-light text-white/40 text-[.71rem] no-underline transition-colors duration-200">Terms of Service</a>
           </div>
         </div>
       </div>
@@ -901,10 +1164,17 @@ function Footer() {
 function WhatsAppFloat() {
   return (
     <a
-      href="https://wa.me/254735159159?text=Hello%21%20I%27m%20interested%20in%20your%20services."
+      href={CONTACT.whatsappHref}
       target="_blank" rel="noopener noreferrer"
-      className="wa-btn fixed bottom-7 right-7 z-[300] w-[50px] h-[50px] bg-[#25D366] flex items-center justify-center no-underline transition-all duration-200"
-      style={{ borderRadius: "4px", boxShadow: "0 4px 24px rgba(37,211,102,.35)" }}
+      className="wa-btn fixed bottom-7 right-7 z-[300] w-[50px] h-[50px] flex items-center justify-center no-underline transition-all duration-200"
+      style={{
+        borderRadius: "16px",
+        background: "rgba(0,0,0,.55)",
+        border: "1px solid rgba(255,255,255,.12)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        boxShadow: "0 18px 60px rgba(0,0,0,.28)",
+      }}
       aria-label="Chat on WhatsApp"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
@@ -928,7 +1198,9 @@ export default function App() {
       <Services />
       <About />
       <Process />
+      <Proof />
       <Divider />
+      <FAQ />
       <Contact />
       <Footer />
       <WhatsAppFloat />
