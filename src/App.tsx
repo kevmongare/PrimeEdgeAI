@@ -30,10 +30,45 @@ const CONTACT = {
   whatsappHref: "https://wa.me/254735159159?text=Hello%21%20I%27m%20interested%20in%20your%20services.",
   email: "info@primeedgeai.com",
   hours: "Mon–Fri, 8am–6pm EAT",
-  // Replace with your real form endpoint, e.g. a Formspree/Basin/Getform URL,
-  // or point this at your own serverless function.
-  formEndpoint: "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID",
+  formEndpoint: "https://primeedgeai.app.n8n.cloud/webhook/contact",
 };
+
+function openContactSession(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.preventDefault();
+  const open = () => window.dispatchEvent(new Event("primeedge:open-contact"));
+  if (window.location.pathname !== "/") {
+    window.history.pushState({}, "", "/");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.setTimeout(open, 0);
+  } else {
+    open();
+  }
+}
+
+function servicePath(id: string) {
+  const item = SERVICE_NAV_ITEMS.find(service => service.id === id);
+  return `/${item?.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") ?? id}`;
+}
+
+function navigateService(id: string) {
+  window.history.pushState({}, "", servicePath(id));
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openServicePage(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+  e.preventDefault();
+  navigateService(id);
+}
+
+const SERVICE_NAV_ITEMS = [
+  { id: "ai-education", label: "AI Education & Training" },
+  { id: "ai-consulting", label: "AI Implementation Consulting" },
+  { id: "ai-automation", label: "AI Automation" },
+  { id: "ai-saas", label: "Custom AI SaaS" },
+  { id: "website-creation", label: "Website Creation" },
+  { id: "data-analytics", label: "Data Analytics" },
+];
 
 /* ─────────────────────────────────────────
    FONT INJECTION  (Space Grotesk + Inter + Cormorant Garamond)
@@ -94,6 +129,15 @@ if (!document.head.querySelector("[data-pe-css]")) {
     .wa-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(37,211,102,.5); }
     .faq-trigger:hover { color: #F0F0F8 !important; }
     input:focus, select:focus, textarea:focus { border-color: ${PRIMARY_COLOR} !important; }
+    .contact-modal-backdrop { animation: contact-fade-in .22s ease-out both; }
+    .contact-modal-card { animation: contact-rise-in .3s cubic-bezier(.2,.8,.2,1) both; }
+    .contact-modal-card input, .contact-modal-card select, .contact-modal-card textarea { border-radius: 10px !important; background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.1) !important; }
+    .contact-modal-card input:hover, .contact-modal-card select:hover, .contact-modal-card textarea:hover { border-color: rgba(255,255,255,.22) !important; }
+    .contact-modal-card button[type="submit"] { border-radius: 10px !important; }
+    @keyframes contact-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes contact-rise-in { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .service-page-enter { animation: service-page-enter .55s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes service-page-enter { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-reduced-motion: reduce) {
       * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
     }
@@ -220,16 +264,30 @@ function Navbar() {
             <Logo />
           </a>
 
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-8">
-            {links.map(l => (
-              <a key={l.label} href={l.href}
-                 className="nav-link-hover text-white/65 text-[.82rem] font-sans-pe font-medium uppercase tracking-[.16em] no-underline transition-colors duration-200">
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-8 items-center">
+            {links.map(l => l.label === "Services" ? (
+              <div key={l.label} className="group relative py-4">
+                <a href={l.href} className="nav-link-hover text-white/65 text-[.82rem] font-sans-pe font-medium uppercase tracking-[.16em] no-underline transition-colors duration-200">
+                  Services <span className="ml-1 text-[.65rem] text-[#C9A84C]">+</span>
+                </a>
+                <div className="absolute left-1/2 top-full w-[270px] -translate-x-1/2 translate-y-2 pointer-events-none opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <div className="mt-2 border border-white/[.1] bg-[#0b0b14]/95 p-2 shadow-[0_24px_70px_rgba(0,0,0,.5)] backdrop-blur-xl" style={{ borderRadius: "14px" }}>
+                    {SERVICE_NAV_ITEMS.map(item => (
+                      <a key={item.id} href={servicePath(item.id)} onClick={(e) => openServicePage(e, item.id)} className="block px-4 py-3 text-[.76rem] font-sans-pe text-white/65 no-underline transition-colors hover:bg-white/[.06] hover:text-white">
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <a key={l.label} href={l.href} className="nav-link-hover text-white/65 text-[.82rem] font-sans-pe font-medium uppercase tracking-[.16em] no-underline transition-colors duration-200">
                 {l.label}
               </a>
             ))}
           </div>
 
-          <a href="#contact"
+          <a href="#contact" onClick={openContactSession}
              className="nav-cta hidden md:inline-flex items-center justify-center text-white text-[.78rem] font-semibold font-sans-pe no-underline
                         px-6 py-2.5 transition-all duration-200"
              style={{ borderRadius: "999px", background: "linear-gradient(135deg, rgba(107,140,255,.2), rgba(107,140,255,.1))", border: `1px solid rgba(255,255,255,.08)`, boxShadow: `0 18px 60px rgba(107,140,255,.2)` }}>
@@ -268,7 +326,7 @@ function Navbar() {
               {l.label}
             </a>
           ))}
-          <a href="#contact" onClick={() => setOpen(false)}
+          <a href="#contact" onClick={(e) => { setOpen(false); openContactSession(e); }}
              className="mt-4 text-center py-3 text-[.78rem] tracking-[.08em] uppercase font-medium font-sans-pe no-underline text-white bg-[#C9A84C] transition-colors duration-200"
              style={{ borderRadius: "999px" }}>
             {CTA_LABEL}
@@ -326,7 +384,7 @@ function Hero() {
             </p>
 
             <div className="mt-12 flex flex-wrap justify-center gap-4">
-              <a href="#contact"
+              <a href="#contact" onClick={openContactSession}
                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-12 py-3 text-[.78rem] font-semibold uppercase tracking-[.12em] text-white transition duration-300 hover:bg-white/15 hover:border-white/25 hover:shadow-[0_22px_60px_rgba(255,255,255,.08)]">
                 {CTA_LABEL}
               </a>
@@ -413,20 +471,32 @@ const CORE_SERVICES = [
 
 const OTHER_SERVICES = [
   {
+    id: "website-creation",
     tag: "Digital Presence",
     title: "Website Creation",
     desc: "Performance-first, visually striking web experiences built for conversion, credibility, and long-term brand authority.",
+    img: IMG.web,
+    includes: ["Conversion-focused information architecture", "Responsive visual design and development", "Performance, accessibility, and SEO foundations", "Content guidance and launch support"],
+    timeline: "3–6 weeks depending on scope",
+    outcome: "A fast, credible digital presence designed to turn attention into qualified conversations.",
   },
   {
+    id: "data-analytics",
     tag: "Business Intelligence",
     title: "Data Analytics",
     desc: "Transform fragmented data into unified intelligence — dashboards, forecasting models, and actionable reports.",
+    img: IMG.analytics,
+    includes: ["Data source audit and cleanup", "Decision-ready dashboards and reporting", "Forecasting and trend analysis", "Documentation your team can maintain"],
+    timeline: "2–5 weeks for the first reporting system",
+    outcome: "A clearer operating picture that helps your team spot opportunities and act with confidence.",
   },
 ];
 
+const ALL_SERVICES = [...CORE_SERVICES, ...OTHER_SERVICES];
+
 function Services() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const active = CORE_SERVICES.find(s => s.id === activeModal);
+  const active = ALL_SERVICES.find(s => s.id === activeModal);
 
   // Lock body scroll while modal is open, and support Escape to close
   useEffect(() => {
@@ -441,9 +511,15 @@ function Services() {
     };
   }, [activeModal]);
 
+  useEffect(() => {
+    const open = (e: Event) => setActiveModal((e as CustomEvent<string>).detail);
+    window.addEventListener("primeedge:open-service", open);
+    return () => window.removeEventListener("primeedge:open-service", open);
+  }, []);
+
   return (
     <section id="services" className="bg-[#020306] px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
 
         {/* ── Header ── */}
         <Reveal>
@@ -468,7 +544,7 @@ function Services() {
             <Reveal key={svc.id} delay={i * 0.07}>
               <div
                 className="service-card bg-[#020306] overflow-hidden cursor-pointer transition-colors duration-300 hover:bg-[#030409] h-full flex flex-col"
-                onClick={() => setActiveModal(svc.id)}
+                onClick={() => navigateService(svc.id)}
               >
                 <div className="overflow-hidden flex-shrink-0">
                   <img src={svc.img} alt={svc.title} className="img-service w-full h-[200px] object-cover" loading="lazy" />
@@ -485,7 +561,7 @@ function Services() {
                   </p>
                   <button
                     className="mt-5 text-[#6B8CFF] text-[.68rem] font-medium font-sans-pe tracking-[.14em] uppercase text-left bg-transparent border-none cursor-pointer p-0 transition-colors duration-200 hover:text-[#8aaeff]"
-                    onClick={(e) => { e.stopPropagation(); setActiveModal(svc.id); }}
+                    onClick={(e) => { e.stopPropagation(); navigateService(svc.id); }}
                   >
                     Learn more →
                   </button>
@@ -505,7 +581,7 @@ function Services() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-black/20 border border-black/20">
               {OTHER_SERVICES.map((svc) => (
-                <div key={svc.title} className="bg-[#020306] hover:bg-[#030409] transition-colors duration-300 p-8">
+                <div key={svc.title} className="bg-[#020306] hover:bg-[#030409] transition-colors duration-300 p-8 cursor-pointer" onClick={() => navigateService(svc.id)}>
                   <span className="block text-[#C9A84C] text-[.6rem] font-medium font-sans-pe tracking-[.2em] uppercase mb-2.5">
                     {svc.tag}
                   </span>
@@ -515,10 +591,9 @@ function Services() {
                   <p className="font-sans-pe font-light text-white/50 text-[.83rem] leading-[1.78]">
                     {svc.desc}
                   </p>
-                  <a href="#contact"
-                     className="mt-5 inline-block text-[#6B8CFF] text-[.68rem] font-medium font-sans-pe tracking-[.14em] uppercase no-underline transition-colors duration-200 hover:text-[#8aaeff]">
-                    Get in touch →
-                  </a>
+                  <button onClick={() => navigateService(svc.id)} className="mt-5 text-[#6B8CFF] text-[.68rem] font-medium font-sans-pe tracking-[.14em] uppercase text-left bg-transparent border-none cursor-pointer p-0 transition-colors duration-200 hover:text-[#8aaeff]">
+                    Explore service →
+                  </button>
                 </div>
               ))}
             </div>
@@ -584,9 +659,9 @@ function Services() {
               <div className="flex gap-4">
                 <a
                   href="#contact"
+                  onClick={(e) => { setActiveModal(null); openContactSession(e); }}
                   className="btn-accent bg-[#6B8CFF] text-white px-7 py-[13px] text-[.74rem] font-medium font-sans-pe tracking-[.1em] uppercase no-underline transition-all duration-200 inline-block"
                   style={{ borderRadius: "4px" }}
-                  onClick={() => setActiveModal(null)}
                 >
                   {CTA_LABEL}
                 </a>
@@ -625,7 +700,7 @@ function About() {
 
   return (
     <section id="about" className="bg-[#020306] px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
 
           <Reveal>
@@ -669,7 +744,7 @@ function About() {
             </div>
 
             <div className="mt-11">
-              <a href="#contact"
+              <a href="#contact" onClick={openContactSession}
                  className="btn-accent bg-[#6B8CFF] text-white px-9 py-[15px] text-[.78rem] font-medium font-sans-pe
                             tracking-[.1em] uppercase no-underline transition-all duration-200 inline-block"
                  style={{ borderRadius: "4px" }}>
@@ -697,7 +772,7 @@ const STEPS = [
 function Process() {
   return (
     <section id="process" className="bg-[#020306] px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <Reveal>
           <Kicker>How We Work</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-16"
@@ -745,7 +820,7 @@ function Proof() {
 
   return (
     <section className="bg-[#020306] px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <Reveal>
           <Kicker>What It Looks Like In Practice</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-10"
@@ -846,7 +921,7 @@ function FAQ() {
 
   return (
     <section id="faq" className="px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[820px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[820px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <Reveal>
           <Kicker>Common Questions</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-14"
@@ -896,6 +971,7 @@ function FAQ() {
 type FormState = "idle" | "sending" | "sent" | "error";
 
 function Contact() {
+  const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<FormState>("idle");
   const [fields, setFields] = useState({
     firstName: "", lastName: "", email: "", service: "", message: "",
@@ -904,6 +980,24 @@ function Contact() {
   const update = (key: keyof typeof fields) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setFields(f => ({ ...f, [key]: e.target.value }));
+
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    const closeOnEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("primeedge:open-contact", open);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("primeedge:open-contact", open);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -926,47 +1020,11 @@ function Contact() {
     }
   }
 
-  const SVGpin = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B8CFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-  const SVGphone = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B8CFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" />
-    </svg>
-  );
-  const SVGmail = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B8CFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-  const SVGclock = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B8CFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-  const SVGwa = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="#6B8CFF">
-      <path d="M12.04 2.01A10 10 0 0 0 2 12.06a9.84 9.84 0 0 0 1.37 5.09L2 22l5.07-1.33a9.95 9.95 0 0 0 4.96 1.28H12A10 10 0 0 0 12.04 2zM12 20.08a8.07 8.07 0 0 1-4.1-1.13l-.3-.17-3.02.79.8-2.94-.2-.31a8.04 8.04 0 1 1 14.9-4.27 8.03 8.03 0 0 1-8.08 8.03zm4.62-6.03c-.26-.13-1.5-.74-1.73-.83s-.4-.13-.57.13-.66.83-.81 1-.3.2-.56.07a6.6 6.6 0 0 1-1.94-1.2 7.4 7.4 0 0 1-1.37-1.7c-.14-.26 0-.4.12-.53s.26-.3.4-.45c.14-.15.2-.26.3-.43a.5.5 0 0 0-.02-.48c-.07-.14-.57-1.37-.78-1.87s-.4-.42-.56-.43h-.48a.92.92 0 0 0-.67.31 2.78 2.78 0 0 0-.86 2.06c0 1.22.87 2.4 1 2.57.13.17 1.7 2.6 4.13 3.64.58.25 1.04.4 1.4.51a3.35 3.35 0 0 0 1.56.1 2.66 2.66 0 0 0 1.75-1.22c.22-.3.22-.54.16-.74s-.24-.17-.5-.3z"/>
-    </svg>
-  );
-
-  // Single source of contact info — phone and WhatsApp now point to the same number
-  const items = [
-    { label: "Location", value: CONTACT.location, icon: SVGpin,   href: null },
-    { label: "Phone",    value: CONTACT.phone,     icon: SVGphone, href: CONTACT.phoneHref },
-    { label: "WhatsApp", value: "Chat on WhatsApp", icon: SVGwa,   href: CONTACT.whatsappHref },
-    { label: "Email",    value: CONTACT.email,     icon: SVGmail,  href: `mailto:${CONTACT.email}` },
-    { label: "Hours",    value: CONTACT.hours,      icon: SVGclock, href: null },
-  ];
-
   const inputCls = "w-full bg-[#13131f] border border-white/[.07] text-[#F0F0F8] text-[.87rem] font-sans-pe font-light px-4 py-[13px] outline-none transition-colors duration-200 placeholder:text-white/25";
 
   return (
     <section id="contact" className="bg-[#020306] px-6 md:px-12 py-28">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <Reveal>
           <Kicker>Get In Touch</Kicker>
           <h2 className="font-serif font-light text-[#F0F0F8] leading-[1.15] tracking-[-0.01em] mb-16"
@@ -978,39 +1036,58 @@ function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-20 items-start">
 
           <Reveal>
-            <p className="font-sans-pe font-light text-white/50 text-[.9rem] leading-[1.88] mb-11">
+            <p className="font-sans-pe font-light text-white/50 text-[.9rem] leading-[1.88] mb-10">
               Whether you want to deploy AI, upskill your team, build a custom AI product,
               or automate your workflows — Prime Edge AI is ready. Let's start with a conversation.
             </p>
-            <div className="flex flex-col gap-7">
-              {items.map(ci => (
-                <div key={ci.label} className="flex items-start gap-[18px]">
-                  <div className="w-9 h-9 border border-white/[.07] bg-[#080810] flex items-center justify-center flex-shrink-0"
-                       style={{ borderRadius: "4px" }}>
-                    {ci.icon}
-                  </div>
-                  <div>
-                    <span className="block font-sans-pe font-normal text-white/45 text-[.6rem] tracking-[.14em] uppercase mb-1">
-                      {ci.label}
-                    </span>
-                    {ci.href ? (
-                      <a href={ci.href} target={ci.href.startsWith("http") ? "_blank" : undefined}
-                         rel={ci.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                         className="font-sans-pe font-normal text-[#F0F0F8] text-[.85rem] no-underline hover:text-[#6B8CFF] transition-colors duration-200">
-                        {ci.value}
-                      </a>
-                    ) : (
-                      <span className="font-sans-pe font-normal text-[#F0F0F8] text-[.85rem]">{ci.value}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="border-l-2 border-[#C9A84C] pl-5 py-2">
+              <span className="block font-serif italic text-[#F0F0F8] text-[1.45rem] leading-[1.2] mb-2">Bring us the messy part.</span>
+              <span className="block font-sans-pe font-light text-white/45 text-[.82rem] leading-[1.75]">We will help turn it into a focused, measurable next move.</span>
             </div>
           </Reveal>
 
           <Reveal delay={0.1}>
-            <form className="bg-[#080810] border border-white/[.07] p-12" onSubmit={handleSubmit} noValidate>
-              <div className="grid grid-cols-2 gap-4 mb-[22px]">
+            <div className="bg-[#080810] border border-white/[.07] p-8 md:p-12">
+              <span className="block font-sans-pe font-medium text-[#C9A84C] text-[.62rem] tracking-[.16em] uppercase mb-4">Start a conversation</span>
+              <h3 className="font-serif font-light text-[#F0F0F8] text-[1.8rem] leading-[1.15] mb-4">Tell us where you want an edge.</h3>
+              <p className="font-sans-pe font-light text-white/50 text-[.85rem] leading-[1.8] mb-8">Share a little about your goals and we will get back to you with a useful next step.</p>
+              <button
+                type="button"
+                onClick={() => setIsOpen(true)}
+                className="btn-accent bg-[#6B8CFF] text-white px-8 py-[14px] text-[.74rem] font-medium font-sans-pe tracking-[.1em] uppercase border-none cursor-pointer transition-all duration-200"
+                style={{ borderRadius: "4px" }}
+              >
+                {CTA_LABEL}
+              </button>
+            </div>
+          </Reveal>
+        </div>
+
+      </div>
+
+      {isOpen && (
+        <div
+          className="contact-modal-backdrop fixed inset-0 z-[600] flex items-center justify-center p-4 md:p-8"
+          style={{ background: "rgba(0,0,0,.88)", backdropFilter: "blur(14px)" }}
+          onClick={() => setIsOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-dialog-title"
+        >
+          <div
+            className="contact-modal-card relative bg-[#0b0b14] border border-white/[.1] max-w-[720px] w-full max-h-[92vh] overflow-y-auto"
+            style={{ borderRadius: "18px", boxShadow: "0 30px 120px rgba(0,0,0,.65)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-6 px-6 py-6 md:px-10 border-b border-white/[.07]">
+              <div>
+                <Kicker>Get In Touch</Kicker>
+                <h3 id="contact-dialog-title" className="font-serif font-light text-[#F0F0F8] text-[2rem] leading-[1.1]">Let's make it practical.</h3>
+              </div>
+              <button type="button" onClick={() => setIsOpen(false)} className="text-white/45 hover:text-white bg-transparent border-none cursor-pointer text-2xl leading-none" aria-label="Close contact form">×</button>
+            </div>
+            <form className="p-6 md:p-10" onSubmit={handleSubmit} noValidate>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-[22px]">
                 <div>
                   <label className="block font-sans-pe font-medium text-white/45 text-[.6rem] tracking-[.16em] uppercase mb-2">First Name</label>
                   <input type="text" placeholder="John" className={inputCls} style={{ borderRadius: "4px" }}
@@ -1075,10 +1152,9 @@ function Contact() {
                 </p>
               )}
             </form>
-          </Reveal>
+          </div>
         </div>
-
-      </div>
+      )}
     </section>
   );
 }
@@ -1113,7 +1189,7 @@ function Footer() {
 
   return (
     <footer className="border-t border-black/20 px-6 md:px-12 pt-16 pb-8">
-      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-[32px] overflow-hidden">
+      <div className="section-panel relative max-w-[1160px] mx-auto p-8 md:p-10 rounded-none overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.8fr_1fr_1fr_1fr] gap-12 pb-14 mb-8 border-b border-white/[.06]">
           <div>
             <span className="block font-serif font-light text-[#F0F0F8] text-[1.5rem] tracking-[.02em] mb-4">
@@ -1184,24 +1260,72 @@ function WhatsAppFloat() {
   );
 }
 
+function ServicePage({ service }: { service: (typeof ALL_SERVICES)[number] }) {
+  return (
+    <main className="service-page-enter min-h-screen bg-[#020306] px-6 md:px-12 pt-28 pb-24">
+      <div className="max-w-[1160px] mx-auto">
+        <a href="/" onClick={(e) => { e.preventDefault(); window.history.pushState({}, "", "/"); window.dispatchEvent(new PopStateEvent("popstate")); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="inline-flex items-center gap-2 text-[#C9A84C] text-[.7rem] font-sans-pe font-medium tracking-[.16em] uppercase no-underline mb-16 hover:text-white transition-colors">
+          ← All services
+        </a>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-12 lg:gap-24 items-start">
+          <div>
+            <Kicker>{service.tag}</Kicker>
+            <h1 className="font-serif font-light text-[#F0F0F8] text-[clamp(3rem,7vw,6.5rem)] leading-[.92] mb-8">{service.title}</h1>
+            <p className="font-sans-pe font-light text-white/60 text-[1rem] leading-[1.9] max-w-[620px] mb-10">{service.desc}</p>
+            <a href="#contact" onClick={openContactSession} className="inline-flex items-center justify-center bg-[#6B8CFF] text-white px-8 py-4 text-[.74rem] font-sans-pe font-medium tracking-[.12em] uppercase no-underline" style={{ borderRadius: "4px" }}>{CTA_LABEL}</a>
+          </div>
+          <div className="border-t border-white/[.12] pt-6">
+            <img src={service.img} alt="" className="w-full aspect-[4/3] object-cover mb-10 img-service" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+              <div><span className="block text-[#C9A84C] text-[.62rem] font-sans-pe tracking-[.16em] uppercase mb-3">Typical timeline</span><span className="font-sans-pe text-white/75 text-[.88rem] leading-[1.6]">{service.timeline}</span></div>
+              <div><span className="block text-[#C9A84C] text-[.62rem] font-sans-pe tracking-[.16em] uppercase mb-3">The outcome</span><span className="font-sans-pe text-white/75 text-[.88rem] leading-[1.6]">{service.outcome}</span></div>
+            </div>
+            <span className="block text-white/45 text-[.62rem] font-sans-pe tracking-[.16em] uppercase mb-4">What is included</span>
+            <ul className="m-0 p-0 list-none flex flex-col gap-3">{service.includes.map(item => <li key={item} className="font-sans-pe text-white/65 text-[.86rem] leading-[1.6] border-b border-white/[.07] pb-3">{item}</li>)}</ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 /* ─────────────────────────────────────────
    APP ROOT
 ───────────────────────────────────────── */
 export default function App() {
+  const [path, setPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setPath(window.location.pathname);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const service = ALL_SERVICES.find(item => servicePath(item.id) === path);
+
   return (
     <div
       className="font-sans-pe text-[#F0F0F8] antialiased"
       style={{ backgroundColor: "#080810", color: "#F0F0F8", minHeight: "100vh" }}
     >
       <Navbar />
-      <Hero />
-      <Services />
-      <About />
-      <Process />
-      <Proof />
-      <Divider />
-      <FAQ />
-      <Contact />
+      {service ? (
+        <ServicePage key={path} service={service} />
+      ) : (
+        <>
+          <Hero />
+          <About />
+          <Services />
+          <Process />
+          <Proof />
+          <Divider />
+          <FAQ />
+          <Contact />
+        </>
+      )}
       <Footer />
       <WhatsAppFloat />
     </div>
